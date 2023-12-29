@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dynamical System Simulation</title>
+    <link rel="stylesheet" type="text/css" href="https://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
+    <script type="text/javascript" src="https://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script>
+    <style>
+        .jxgbox {
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .slider-container {
+            width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .slider-label {
+            display: inline-block;
+            margin: 0 10px;
+        }
+        .slider {
+            width: 150px;
+        }
+        .equations-box {
+            width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .equations-box p {
+            margin: 5px;
+        }
+        h3 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="equations-box">
+        <h3>Differential Equations Governing This System</h3>
+        <p>x' = ax - bxy</p>
+        <p>y' = cxy - dy</p>
+    </div>
+    <div class="slider-container">
+        <h3>Parameters to be varied</h3>
+        <div class="slider-label">
+            a: <input type="range" id="a" class="slider" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div class="slider-label">
+            b: <input type="range" id="b" class="slider" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div class="slider-label">
+            c: <input type="range" id="c" class="slider" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div class="slider-label">
+            d: <input type="range" id="d" class="slider" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div class="slider-label">
+            x0: <input type="range" id="x0" class="slider" min="0" max="10" step="0.1" value="2">
+        </div>
+        <div class="slider-label">
+            y0: <input type="range" id="y0" class="slider" min="0" max="10" step="0.1" value="1">
+        </div>
+    </div>
+    <h3>Predator-Prey Time Series</h3>
+    <div id="box" class="jxgbox"></div>
+    <h3>Phase space plot</h3>
+    <div id="phase-space" class="jxgbox"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
