@@ -24,7 +24,8 @@ const uniforms = {
     uClickPosition: { value: clickPosition },
     uCanvasSize: { value: new THREE.Vector2(canvasWidth, canvasHeight) },
     uDecayRate: { value: decayRate },
-    uTexture: { value: null } // Texture from the current render target
+    uTexture: { value: null }, // Texture from the current render target
+    uDotRadius: { value: parseFloat(radiusSlider.value)}
 };
 
 // Shader Material
@@ -40,6 +41,7 @@ const material = new THREE.ShaderMaterial({
         uniform vec2 uCanvasSize;
         uniform float uDecayRate;
         uniform sampler2D uTexture;
+        uniform float uDotRadius;
 
         void main() {
             vec2 normCoords = gl_FragCoord.xy / uCanvasSize;
@@ -50,7 +52,7 @@ const material = new THREE.ShaderMaterial({
 
             // Check if the current pixel is close to the click position
             float dist = distance(normCoords, adjustedClickPos);
-            if(dist < 0.05) { // Radius of the new dot
+            if(dist < uDotRadius) { // Radius of the new dot
                 currentIntensity = 1.0; // Maximum intensity for a new dot
             }
 
@@ -76,24 +78,41 @@ canvas.addEventListener('click', (event) => {
     clickPosition.set(x, y);
     renderDot(); // Render the new dot
 });
-
-// Render Dot Function
+radiusSlider.addEventListener('input', () => {
+    uniforms.uDotRadius.value = parseFloat(radiusSlider.value);
+});
+// Render Dot Function (Called on Click)
 function renderDot() {
     uniforms.uTexture.value = currentRenderTarget.texture;
     renderer.setRenderTarget(nextRenderTarget);
     renderer.render(scene, camera);
 
     // Swap the render targets
+    swapRenderTargets();
+
+}
+
+// Swap Render Targets Function
+function swapRenderTargets() {
     let temp = currentRenderTarget;
     currentRenderTarget = nextRenderTarget;
     nextRenderTarget = temp;
-
-    renderer.setRenderTarget(null); // Reset to render to the canvas
 }
 
-// Animation Loop
+// Animation Loop (with Continuous Decay)
 function animate() {
     requestAnimationFrame(animate);
+
+    // Apply decay to the texture in currentRenderTarget and render to nextRenderTarget
+    uniforms.uTexture.value = currentRenderTarget.texture;
+    renderer.setRenderTarget(nextRenderTarget);
+    renderer.render(scene, camera);
+
+    // Swap the render targets for the next frame
+    swapRenderTargets();
+
+    // Render the current state to the canvas for display
+    renderer.setRenderTarget(null);
     uniforms.uTexture.value = currentRenderTarget.texture;
     renderer.render(scene, camera);
 }
