@@ -1,8 +1,8 @@
 const canvas = document.getElementById('glCanvas');
 
 // Specify the size of the canvas
-const canvasWidth = 800;
-const canvasHeight = 600;
+const canvasWidth = canvas.offsetWidth;
+const canvasHeight = canvas.offsetHeight;
 
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
@@ -29,8 +29,16 @@ const material = new THREE.ShaderMaterial({
         uniform vec2 uClickPosition;
         uniform vec2 uCanvasSize;
         void main() {
-            vec2 normCoords = (gl_FragCoord.xy / uCanvasSize);
-            float dist = distance(normCoords, uClickPosition);
+            float aspectRatio = uCanvasSize.x / uCanvasSize.y;
+            vec2 normCoords = gl_FragCoord.xy / uCanvasSize;
+            vec2 adjustedClickPos = uClickPosition;
+        
+            // Adjust only the x-coordinate for the aspect ratio
+            float dx = (normCoords.x - adjustedClickPos.x) * aspectRatio;
+            float dy = normCoords.y - adjustedClickPos.y;
+        
+            // Calculate the distance, taking the aspect ratio into account
+            float dist = sqrt(dx * dx + dy * dy);
             if (dist < 0.05) { // Dot radius
                 gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // White dot
             } else {
