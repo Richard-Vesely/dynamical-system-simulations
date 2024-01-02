@@ -1,9 +1,8 @@
 const canvas = document.getElementById('glCanvas');
 const radiusSlider = document.getElementById('radiusSlider');
 
-// Specify the size of the canvas
-const canvasWidth = canvas.width;  // Use actual resolution
-const canvasHeight = canvas.height; // Use actual resolution
+const canvasWidth = canvas.width; // Actual resolution
+const canvasHeight = canvas.height; // Actual resolution
 
 // Scene, Camera, Renderer
 const scene = new THREE.Scene();
@@ -11,16 +10,21 @@ const camera = new THREE.Camera();
 const renderer = new THREE.WebGLRenderer({ canvas: canvas });
 renderer.setSize(canvasWidth, canvasHeight);
 
-// Create a WebGL render target
-const renderTarget = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
+// Create two render targets for ping-pong rendering
+const renderTargetA = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
+const renderTargetB = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
+let currentRenderTarget = renderTargetA;
+let nextRenderTarget = renderTargetB;
 
-// Click Position and Dot Radius Uniform
+// Click Position and Decay Rate Uniforms
 const clickPosition = new THREE.Vector2(-2, -2); // Initialize off-screen
+const decayRate = 0.01; // Adjust this rate as needed
+
 const uniforms = {
     uClickPosition: { value: clickPosition },
     uCanvasSize: { value: new THREE.Vector2(canvasWidth, canvasHeight) },
-    uDotRadius: { value: parseFloat(radiusSlider.value) }, // New uniform for dot radius
-    uRenderTargetTexture: { value: renderTarget.texture } // New uniform for render target texture
+    uDecayRate: { value: decayRate },
+    uTexture: { value: null } // Texture from the current render target
 };
 
 // Shader Material
@@ -34,26 +38,26 @@ const material = new THREE.ShaderMaterial({
     fragmentShader: `
         uniform vec2 uClickPosition;
         uniform vec2 uCanvasSize;
-        uniform float uDotRadius;
-        uniform sampler2D uRenderTargetTexture; // Texture from render target
+        uniform float uDecayRate;
+        uniform sampler2D uTexture;
 
         void main() {
-            float aspectRatio = uCanvasSize.x / uCanvasSize.y;
             vec2 normCoords = gl_FragCoord.xy / uCanvasSize;
             vec2 adjustedClickPos = uClickPosition;
 
-            // Adjust only the x-coordinate for the aspect ratio
-            float dx = (normCoords.x - adjustedClickPos.x) * aspectRatio;
-            float dy = normCoords.y - adjustedClickPos.y;
+            // Sample the current intensity from the texture
+            float currentIntensity = texture2D(uTexture, normCoords).r;
 
-            // Calculate the distance, taking the aspect ratio into account
-            float dist = sqrt(dx * dx + dy * dy);
-            if (dist < uDotRadius) {
-                gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // White dot
-            } else {
-                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); // Black background
+            // Check if the current pixel is close to the click position
+            float dist = distance(normCoords, adjustedClickPos);
+            if(dist < 0.05) { // Radius of the new dot
+                currentIntensity = 1.0; // Maximum intensity for a new dot
             }
-            // Additional diffusion logic using uRenderTargetTexture can be added here
+
+            // Apply decay to the intensity
+            float nextIntensity = max(currentIntensity - uDecayRate, 0.0);
+
+            gl_FragColor = vec4(nextIntensity, nextIntensity, nextIntensity, 1.0);
         }
     `
 });
@@ -63,27 +67,34 @@ const plane = new THREE.PlaneGeometry(2, 2);
 const quad = new THREE.Mesh(plane, material);
 scene.add(quad);
 
+// Mouse Click Event
 canvas.addEventListener('click', (event) => {
     const rect = canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left) / canvasWidth;
     const y = 1 - (event.clientY - rect.top) / canvasHeight; // Invert Y
 
     clickPosition.set(x, y);
-    renderDot(); // Render the dot to the render target
+    renderDot(); // Render the new dot
 });
 
-radiusSlider.addEventListener('input', () => {
-    uniforms.uDotRadius.value = parseFloat(radiusSlider.value);
-});
-
+// Render Dot Function
 function renderDot() {
-    renderer.setRenderTarget(renderTarget); // Render to the render target
+    uniforms.uTexture.value = currentRenderTarget.texture;
+    renderer.setRenderTarget(nextRenderTarget);
     renderer.render(scene, camera);
+
+    // Swap the render targets
+    let temp = currentRenderTarget;
+    currentRenderTarget = nextRenderTarget;
+    nextRenderTarget = temp;
+
     renderer.setRenderTarget(null); // Reset to render to the canvas
 }
 
+// Animation Loop
 function animate() {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera); // Render the scene for display
+    uniforms.uTexture.value = currentRenderTarget.texture;
+    renderer.render(scene, camera);
 }
 animate();
