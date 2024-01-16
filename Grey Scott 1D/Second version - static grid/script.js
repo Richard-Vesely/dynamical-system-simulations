@@ -19,67 +19,134 @@ function eulerSimulate(f, du, dv, k, u0, simulationTime, dt) {
     return { ts, us, vs };
 }
 
-var board = JXG.JSXGraph.initBoard('box', {
-    boundingbox: [-1, 2, 10, -1], 
-    axis: true,
-    keepaspectratio: false
-});
-
-board.create('text', [8, 1.8, "U concentration"], {fontSize: 18, color: '#00f'});
-board.create('text', [8, 1.6, "V concentration"], {fontSize: 18, color: '#f00'});
-
-var uSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#00f'});
-var vSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#f00'});
-
-function updateGraph() {
-    const f = parseFloat(document.getElementById('f').value);
-    const du = parseFloat(document.getElementById('du').value);
-    const dv = parseFloat(document.getElementById('dv').value);
-    const k = parseFloat(document.getElementById('k').value);
-    const u0 = parseFloat(document.getElementById('u0').value);
-    const simulationTime = parseFloat(document.getElementById('simulation-time').value);
-    const dt = 0.01;
-
-   // Calculate new bounding box - otherwise it id displayed in a weird way
-   const minX = -simulationTime * 0.06//Math.min(0, simulationTime - 10); // Keep the last 10 units of x-axis visible
-   const maxX = simulationTime;
-
-   board.setBoundingBox([minX, 2, maxX, -1], false);
-
-    let { ts, us, vs } = eulerSimulate(f, du, dv, k, u0, simulationTime, dt);
- 
-    uSeries.dataX = ts;
-    uSeries.dataY = us;
-    uSeries.updateDataArray();
-    vSeries.dataX = ts;
-    vSeries.dataY = vs;
-    vSeries.updateDataArray();
-    board.update();
+function setup() {
+    let canvas = createCanvas(300, 300);
+    canvas.parent('p5-container');
 }
 
-function updateSliderValues() {
-    document.getElementById('f-value').innerText = document.getElementById('f').value;
-    document.getElementById('du-value').innerText = document.getElementById('du').value;
-    document.getElementById('dv-value').innerText = document.getElementById('dv').value;
-    document.getElementById('k-value').innerText = document.getElementById('k').value;
-    document.getElementById('u0-value').innerText = document.getElementById('u0').value;
-    document.getElementById('simulation-time-value').innerText = document.getElementById('simulation-time').value;
+function draw() {
+    background(220);
+    drawGrid();
+    updateGridColors();
 }
 
-let timeoutId;
-function throttledUpdateGraph() {
-    clearTimeout(timeoutId);
+function drawGrid() {
+    let gridSize = 3;
+    let cellSize = width / gridSize;
+
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            let cellX = x * cellSize;
+            let cellY = y * cellSize;
+
+            fill(255); // Default cell color
+
+            if ((x === 0 || x === gridSize - 1) && (y === 0 || y === gridSize - 1)) {
+                fill(0); // Corner cells black
+            }
+
+            if (x === 1 && y === 1) {
+                fill(0, 0, 255); // Center cell blue
+            }
+
+            stroke(0);
+            rect(cellX, cellY, cellSize, cellSize);
+        }
+    }
+}
+
+function updateGridColors() {
+    let cellSize = width / 3;
+    updateCellColor('top-u', 'top-v', cellSize, 0);
+    updateCellColor('left-u', 'left-v', 0, cellSize);
+    updateCellColor('right-u', 'right-v', 2 * cellSize, cellSize);
+    updateCellColor('bottom-u', 'bottom-v', cellSize, 2 * cellSize);
+}
+
+function updateCellColor(uSliderId, vSliderId, x, y) {
+    let cellSize = width / 3;
+    let uValue = map(document.getElementById(uSliderId).value, 0, 1, 0, 255);
+    let vValue = map(document.getElementById(vSliderId).value, 0, 1, 0, 255);
+    fill(uValue, vValue, 0);
+    rect(x, y, cellSize, cellSize);
+}
+
+window.onload = function() {
+    var board = JXG.JSXGraph.initBoard('box', {
+        boundingbox: [-1, 2, 10, -1], 
+        axis: true,
+        keepaspectratio: false
+    });
+
+    board.create('text', [8, 1.8, "U concentration"], {fontSize: 18, color: '#00f'});
+    board.create('text', [8, 1.6, "V concentration"], {fontSize: 18, color: '#f00'});
+
+    var uSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#00f'});
+    var vSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#f00'});
+
+    function updateGraph() {
+        const f = parseFloat(document.getElementById('f').value);
+        const du = parseFloat(document.getElementById('du').value);
+        const dv = parseFloat(document.getElementById('dv').value);
+        const k = parseFloat(document.getElementById('k').value);
+        const u0 = parseFloat(document.getElementById('u0').value);
+        const simulationTime = parseFloat(document.getElementById('simulation-time').value);
+        const dt = 0.01;
+
+        const minX = -simulationTime * 0.06;
+        const maxX = simulationTime;
+        board.setBoundingBox([minX, 2, maxX, -1], false);
+
+        let { ts, us, vs } = eulerSimulate(f, du, dv, k, u0, simulationTime, dt);
+     
+        uSeries.dataX = ts;
+        uSeries.dataY = us;
+        uSeries.updateDataArray();
+        vSeries.dataX = ts;
+        vSeries.dataY = vs;
+        vSeries.updateDataArray();
+        board.update();
+    }
+
+    function updateSliderValues() {
+        document.getElementById('f-value').innerText = document.getElementById('f').value;
+        document.getElementById('du-value').innerText = document.getElementById('du').value;
+        document.getElementById('dv-value').innerText = document.getElementById('dv').value;
+        document.getElementById('k-value').innerText = document.getElementById('k').value;
+        document.getElementById('u0-value').innerText = document.getElementById('u0').value;
+        document.getElementById('simulation-time-value').innerText = document.getElementById('simulation-time').value;
+    }
+
+    let timeoutId;
+    function throttledUpdateGraph() {
+        clearTimeout(timeoutId);
+        updateSliderValues();
+        timeoutId = setTimeout(updateGraph, 100);
+    }
+
+    updateGraph();
     updateSliderValues();
-    timeoutId = setTimeout(updateGraph, 100);
-}
 
-updateGraph();
-updateSliderValues();
+    // Event listeners for model parameters
+    document.getElementById('f').addEventListener('input', throttledUpdateGraph);
+    document.getElementById('du').addEventListener('input', throttledUpdateGraph);
+    document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
+    document.getElementById('k').addEventListener('input', throttledUpdateGraph);
+    document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
+    document.getElementById('simulation-time').addEventListener('input', throttledUpdateGraph);
 
-document.getElementById('simulation-time').addEventListener('input', throttledUpdateGraph);
-document.getElementById('f').addEventListener('input', throttledUpdateGraph);
-document.getElementById('du').addEventListener('input', throttledUpdateGraph);
-document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
-document.getElementById('k').addEventListener('input', throttledUpdateGraph);
-document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
+    // Update display for grid sliders
+    const gridSliders = ['top-u', 'top-v', 'left-u', 'left-v', 'right-u', 'right-v', 'bottom-u', 'bottom-v'];
+    gridSliders.forEach(slider => {
+        updateSliderDisplay(slider, slider + '-value');
+    });
 
+    function updateSliderDisplay(sliderId, displayId) {
+        const slider = document.getElementById(sliderId);
+        const display = document.getElementById(displayId);
+        display.innerText = slider.value;
+        slider.oninput = function() {
+            display.innerText = this.value;
+        };
+    }
+};

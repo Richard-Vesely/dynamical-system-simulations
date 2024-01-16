@@ -4,6 +4,8 @@
     <title>Gray-Scott Model Simulation</title>
     <link rel="stylesheet" type="text/css" href="https://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script type="text/javascript" src="https://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script>
+
     <style>
         .jxgbox {
             width: 600px;
@@ -13,7 +15,7 @@
         }
         .slider-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns */
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             width: 600px;
             margin: 20px auto;
@@ -66,12 +68,10 @@
             flex-direction: column;
             align-items: center;
         }
-        
         .slider-label {
             margin: 5px;
         }
-        </style>
-        
+    </style>
 </head>
 <body>
     <div class="equations-box">
@@ -81,19 +81,14 @@
     <div class="slider-container">
         <label>F (feed rate): <span id="f-value">0.055</span></label>
         <input type="range" id="f" class="slider" min="0" max="0.1" step="0.001" value="0.055">
-
         <label>D<sub>U</sub> (diffusion rate of U): <span id="du-value">0.16</span></label>
         <input type="range" id="du" class="slider" min="0" max="1" step="0.01" value="0.16">
-
         <label>D<sub>V</sub> (diffusion rate of V): <span id="dv-value">0.08</span></label>
         <input type="range" id="dv" class="slider" min="0" max="1" step="0.01" value="0.08">
-
         <label>k (kill rate): <span id="k-value">0.062</span></label>
         <input type="range" id="k" class="slider" min="0" max="0.07" step="0.001" value="0.062">
-
         <label>Initial U: <span id="u0-value">0.5</span></label>
         <input type="range" id="u0" class="slider" min="0" max="1" step="0.01" value="0.5">
-
         <label>Simulation Time: <span id="simulation-time-value">10</span></label>
         <input type="range" id="simulation-time" class="slider" min="1" max="500" step="1" value="10">
     </div>
@@ -130,121 +125,6 @@
         <input type="range" id="bottom-v" min="0" max="1" step="0.01" value="0.5">
     </div>
 
-    <script>
-    let sliders = [];
-
-function setup() {
-    let canvas = createCanvas(300, 300); // Adjust size as needed
-    canvas.parent('p5-container');
-}
-
-function draw() {
-    background(220);
-    drawGrid();
-    updateGridColors();
-}
-
-function drawGrid() {
-    let gridSize = 3;
-    let cellSize = width / gridSize;
-
-    for (let y = 0; y < gridSize; y++) {
-        for (let x = 0; x < gridSize; x++) {
-            let cellX = x * cellSize;
-            let cellY = y * cellSize;
-
-            // Default cell color
-            fill(255);
-
-            // Make corner cells black
-            if ((x === 0 || x === gridSize - 1) && (y === 0 || y === gridSize - 1)) {
-                fill(0);
-            }
-
-            // Make center cell blue
-            if (x === 1 && y === 1) {
-                fill(0, 0, 255);
-            }
-
-            stroke(0);
-            rect(cellX, cellY, cellSize, cellSize);
-        }
-    }
-}
-
-function updateSliderValues() {
-    document.getElementById('f-value').innerText = document.getElementById('f').value;
-    document.getElementById('du-value').innerText = document.getElementById('du').value;
-    document.getElementById('dv-value').innerText = document.getElementById('dv').value;
-    document.getElementById('k-value').innerText = document.getElementById('k').value;
-    document.getElementById('u0-value').innerText = document.getElementById('u0').value;
-    document.getElementById('simulation-time-value').innerText = document.getElementById('simulation-time').value;
-}
-function updateSliderDisplay(sliderId, displayId) {
-    const slider = document.getElementById(sliderId);
-    const display = document.getElementById(displayId);
-    display.innerText = slider.value;
-    
-    slider.oninput = function() {
-        display.innerText = this.value;
-    };
-}
-
-updateSliderDisplay('top-u', 'top-u-value');
-updateSliderDisplay('top-v', 'top-v-value');
-updateSliderDisplay('left-u', 'left-u-value');
-updateSliderDisplay('left-v', 'left-v-value');
-updateSliderDisplay('right-u', 'right-u-value');
-updateSliderDisplay('right-v', 'right-v-value');
-updateSliderDisplay('bottom-u', 'bottom-u-value');
-updateSliderDisplay('bottom-v', 'bottom-v-value');
-
-function throttledUpdateGraph() {
-    clearTimeout(timeoutId);
-    updateSliderValues();
-    // No need to call updateSliderDisplay here since it's set up individually for each slider
-    timeoutId = setTimeout(updateGraph, 100);
-}
-
-function updateGridColors() {
-    let cellSize = width / 3;
-
-    // Top Cell
-    let topU = map(document.getElementById('top-u').value, 0, 1, 0, 255);
-    let topV = map(document.getElementById('top-v').value, 0, 1, 0, 255);
-    fill(topU, topV, 0);
-    rect(cellSize, 0, cellSize, cellSize);
-
-    // Left Cell
-    let leftU = map(document.getElementById('left-u').value, 0, 1, 0, 255);
-    let leftV = map(document.getElementById('left-v').value, 0, 1, 0, 255);
-    fill(leftU, leftV, 0);
-    rect(0, cellSize, cellSize, cellSize);
-
-    // Right Cell
-    let rightU = map(document.getElementById('right-u').value, 0, 1, 0, 255);
-    let rightV = map(document.getElementById('right-v').value, 0, 1, 0, 255);
-    fill(rightU, rightV, 0);
-    rect(2 * cellSize, cellSize, cellSize, cellSize);
-
-    // Bottom Cell
-    let bottomU = map(document.getElementById('bottom-u').value, 0, 1, 0, 255);
-    let bottomV = map(document.getElementById('bottom-v').value, 0, 1, 0, 255);
-    fill(bottomU, bottomV, 0);
-    rect(cellSize, 2 * cellSize, cellSize, cellSize);
-}
-updateGraph();
-updateSliderValues();
-document.getElementById('f').addEventListener('input', throttledUpdateGraph);
-document.getElementById('du').addEventListener('input', throttledUpdateGraph);
-document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
-document.getElementById('k').addEventListener('input', throttledUpdateGraph);
-document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
-document.getElementById('simulation-time').addEventListener('input', throttledUpdateGraph);
-
-    </script>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-
