@@ -1,6 +1,6 @@
 const canvas = document.getElementById('glCanvas');
 const radiusSlider = document.getElementById('radiusSlider');
-
+const decaySlider = document.getElementById('decaySlider');
 const canvasWidth = canvas.width; // Actual resolution
 const canvasHeight = canvas.height; // Actual resolution
 
@@ -18,12 +18,11 @@ let nextRenderTarget = renderTargetB;
 
 // Click Position and Decay Rate Uniforms
 const clickPosition = new THREE.Vector2(-2, -2); // Initialize off-screen
-const decayRate = 0.01; // Adjust this rate as needed
 
 const uniforms = {
     uClickPosition: { value: clickPosition },
     uCanvasSize: { value: new THREE.Vector2(canvasWidth, canvasHeight) },
-    uDecayRate: { value: decayRate },
+    uDecayRate: { value: parseFloat(decaySlider.value) },
     uTexture: { value: null }, // Texture from the current render target
     uDotRadius: { value: parseFloat(radiusSlider.value)}
 };
@@ -48,9 +47,8 @@ const decayMaterial = new THREE.ShaderMaterial({
             float currentIntensity = texture2D(uTexture, uv).r;
 
             // Apply decay to the intensity
-            float nextIntensity = max(currentIntensity - uDecayRate*currentIntensity, 0.0);
+            float nextIntensity = currentIntensity - uDecayRate*currentIntensity;
 
-            
             gl_FragColor = vec4(nextIntensity, nextIntensity, nextIntensity, 1.0);
         }
     `
@@ -117,9 +115,13 @@ radiusSlider.addEventListener('input', () => {
     uniforms.uDotRadius.value = parseFloat(radiusSlider.value);
 });
 
+// Update decay rate uniform based on slider input
+decaySlider.addEventListener('input', () => {
+    uniforms.uDecayRate.value = parseFloat(decaySlider.value);
+});
+
 // Render Dot Function (Called on Click)
 function renderDot() {
-    console.log("Rendering Dot");
     quad.material = clickMaterial; // Use click shader
     uniforms.uTexture.value = currentRenderTarget.texture;
     renderer.setRenderTarget(nextRenderTarget);
@@ -128,7 +130,6 @@ function renderDot() {
 }
 
 function applyDecay() {
-    console.log("Applying Decay");
     quad.material = decayMaterial; // Use decay shader
     uniforms.uTexture.value = currentRenderTarget.texture;
     renderer.setRenderTarget(nextRenderTarget);
@@ -146,7 +147,6 @@ function swapRenderTargets() {
 
 // Animation Loop (with Continuous Decay)
 function animate() {
-    console.log("Animating Frame");
     requestAnimationFrame(animate);
     applyDecay();
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lotka-Volterra Simulation</title>
+    <style>
+        #simulationCanvas {
+            width: 800px;  /* Display width */
+            height: 800px; /* Display height */
+            border: 1px solid black;
+        }
+        #controls {
+            margin: 10px;
+        }
+        label, input {
+            display: block; /* Ensures each control is on a new line */
+            margin: 5px 0; /* Adds some spacing between controls */
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label for="param-a">Parameter a:</label>
+        <input type="range" id="param-a" min="0" max="1" step="0.01" value="0.5">
+        
+        <label for="param-b">Parameter b:</label>
+        <input type="range" id="param-b" min="0" max="1" step="0.01" value="0.5">
+
+        <label for="param-c">Parameter c:</label>
+        <input type="range" id="param-c" min="0" max="1" step="0.01" value="0.5">
+
+        <label for="param-d">Parameter d:</label>
+        <input type="range" id="param-d" min="0" max="1" step="0.01" value="0.5">
+
+        <label for="param-dx">Parameter Dx:</label>
+        <input type="range" id="param-dx" min="0" max="1" step="0.01" value="0.5">
+
+        <label for="param-dy">Parameter Dy:</label>
+        <input type="range" id="param-dy" min="0" max="1" step="0.01" value="0.5">
+    </div>
+    <canvas id="simulationCanvas" width="800" height="800"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
