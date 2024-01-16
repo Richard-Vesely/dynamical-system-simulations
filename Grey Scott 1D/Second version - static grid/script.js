@@ -82,3 +82,4 @@ document.getElementById('du').addEventListener('input', throttledUpdateGraph);
 document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
 document.getElementById('k').addEventListener('input', throttledUpdateGraph);
 document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
+

@@ -45,25 +45,6 @@
             vertical-align: sub;
             font-size: smaller;
         }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            width: 800px;
-            margin: 20px auto;
-            text-align: center;
-        }
-        .grid-cell {
-            width: 150px;
-            height: 150px;
-            border: 1px solid black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .irrelevant-cell {
-            background-color: lightgray;
-        }  
         #p5-container {
             display: flex;
             justify-content: center;
@@ -122,23 +103,31 @@
 
     <h3>Surrounding Cells</h3>
     <div class="grid-slider-container horizontal-sliders">
-        <label>Top U: <input type="range" id="top-u" min="0" max="1" step="0.01" value="0.5"></label>
-        <label>Top V: <input type="range" id="top-v" min="0" max="1" step="0.01" value="0.5"></label>
+        <label>Top U: <span id="top-u-value">0.5</span></label>
+        <input type="range" id="top-u" min="0" max="1" step="0.01" value="0.5">
+        <label>Top V: <span id="top-v-value">0.5</span></label>
+        <input type="range" id="top-v" min="0" max="1" step="0.01" value="0.5">
     </div>
     <div class="grid-slider-container">
         <div class="vertical-sliders">
-            <label>Left U: <input type="range" id="left-u" min="0" max="1" step="0.01" value="0.5"></label>
-            <label>Left V: <input type="range" id="left-v" min="0" max="1" step="0.01" value="0.5"></label>
+            <label>Left U: <span id="left-u-value">0.5</span></label>
+            <input type="range" id="left-u" min="0" max="1" step="0.01" value="0.5">
+            <label>Left V: <span id="left-v-value">0.5</span></label>
+            <input type="range" id="left-v" min="0" max="1" step="0.01" value="0.5">
         </div>
         <div id="p5-container"></div>
         <div class="vertical-sliders">
-            <label>Right U: <input type="range" id="right-u" min="0" max="1" step="0.01" value="0.5"></label>
-            <label>Right V: <input type="range" id="right-v" min="0" max="1" step="0.01" value="0.5"></label>
+            <label>Right U: <span id="right-u-value">0.5</span></label>
+            <input type="range" id="right-u" min="0" max="1" step="0.01" value="0.5">
+            <label>Right V: <span id="right-v-value">0.5</span></label>
+            <input type="range" id="right-v" min="0" max="1" step="0.01" value="0.5">
         </div>
     </div>
     <div class="grid-slider-container horizontal-sliders">
-        <label>Bottom U: <input type="range" id="bottom-u" min="0" max="1" step="0.01" value="0.5"></label>
-        <label>Bottom V: <input type="range" id="bottom-v" min="0" max="1" step="0.01" value="0.5"></label>
+        <label>Bottom U: <span id="bottom-u-value">0.5</span></label>
+        <input type="range" id="bottom-u" min="0" max="1" step="0.01" value="0.5">
+        <label>Bottom V: <span id="bottom-v-value">0.5</span></label>
+        <input type="range" id="bottom-v" min="0" max="1" step="0.01" value="0.5">
     </div>
 
     <script>
@@ -183,6 +172,39 @@ function drawGrid() {
     }
 }
 
+function updateSliderValues() {
+    document.getElementById('f-value').innerText = document.getElementById('f').value;
+    document.getElementById('du-value').innerText = document.getElementById('du').value;
+    document.getElementById('dv-value').innerText = document.getElementById('dv').value;
+    document.getElementById('k-value').innerText = document.getElementById('k').value;
+    document.getElementById('u0-value').innerText = document.getElementById('u0').value;
+    document.getElementById('simulation-time-value').innerText = document.getElementById('simulation-time').value;
+}
+function updateSliderDisplay(sliderId, displayId) {
+    const slider = document.getElementById(sliderId);
+    const display = document.getElementById(displayId);
+    display.innerText = slider.value;
+    
+    slider.oninput = function() {
+        display.innerText = this.value;
+    };
+}
+
+updateSliderDisplay('top-u', 'top-u-value');
+updateSliderDisplay('top-v', 'top-v-value');
+updateSliderDisplay('left-u', 'left-u-value');
+updateSliderDisplay('left-v', 'left-v-value');
+updateSliderDisplay('right-u', 'right-u-value');
+updateSliderDisplay('right-v', 'right-v-value');
+updateSliderDisplay('bottom-u', 'bottom-u-value');
+updateSliderDisplay('bottom-v', 'bottom-v-value');
+
+function throttledUpdateGraph() {
+    clearTimeout(timeoutId);
+    updateSliderValues();
+    // No need to call updateSliderDisplay here since it's set up individually for each slider
+    timeoutId = setTimeout(updateGraph, 100);
+}
 
 function updateGridColors() {
     let cellSize = width / 3;
@@ -211,6 +233,15 @@ function updateGridColors() {
     fill(bottomU, bottomV, 0);
     rect(cellSize, 2 * cellSize, cellSize, cellSize);
 }
+updateGraph();
+updateSliderValues();
+document.getElementById('f').addEventListener('input', throttledUpdateGraph);
+document.getElementById('du').addEventListener('input', throttledUpdateGraph);
+document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
+document.getElementById('k').addEventListener('input', throttledUpdateGraph);
+document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
+document.getElementById('simulation-time').addEventListener('input', throttledUpdateGraph);
+
     </script>
 
 <script src="script.js"></script>
