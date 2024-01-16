@@ -12,69 +12,81 @@
             text-align: center;
         }
         .slider-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns */
+            gap: 10px;
             width: 600px;
             margin: 20px auto;
             text-align: center;
         }
         .slider-label {
-            display: inline-block;
-            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .slider {
             width: 150px;
         }
-        .equations-box {
+        .equations-box, .chemical-equations-box, .parameters-explanation-box {
             width: 600px;
             margin: 20px auto;
             text-align: center;
         }
-        .equations-box p {
+        .equations-box p, .chemical-equations-box p, .parameters-explanation-box p {
             margin: 5px;
         }
         h3 {
             text-align: center;
+        }
+        .math {
+            font-style: italic;
+        }
+        .subscript {
+            vertical-align: sub;
+            font-size: smaller;
         }
     </style>
 </head>
 <body>
     <div class="equations-box">
         <h3>Differential Equations Governing the Gray-Scott Model</h3>
-        <p>u' = DU * laplacian(u) - u*v^2 + F(1 - u)</p>
-        <p>v' = DV * laplacian(v) + u*v^2 - (F + k)v</p>
+        <p><span class="math">u' = D<sub class="subscript">U</sub> &nabla;u - uv<sup>2</sup> + F(1 - u)</span></p>
+        <p><span class="math">v' = D<sub class="subscript">V</sub> &nabla;v + uv<sup>2</sup> - (F + k)v</span></p>
     </div>
-    <div class="slider-container">
-        <h3>Parameters to be varied</h3>
-        <div class="slider-label">
-            F (feed rate): <input type="range" id="f" class="slider" min="0" max="0.1" step="0.001" value="0.055">
-            <span id="f-value"></span>
-        </div>
-        <div class="slider-label">
-            DU (diffusion rate of U): <input type="range" id="du" class="slider" min="0" max="1" step="0.01" value="0.16">
-            <span id="du-value"></span>
-        </div>
-        <div class="slider-label">
-            DV (diffusion rate of V): <input type="range" id="dv" class="slider" min="0" max="1" step="0.01" value="0.08">
-            <span id="dv-value"></span>
-        </div>
-        <div class="slider-label">
-            k (kill rate): <input type="range" id="k" class="slider" min="0" max="0.07" step="0.001" value="0.062">
-            <span id="k-value"></span>
-        </div>
-        <div class="slider-label">
-            Initial U: <input type="range" id="u0" class="slider" min="0" max="1" step="0.01" value="0.5">
-            <span id="u0-value"></span>
-        </div>
+    <h3>Chemical Equations of the Gray-Scott Model</h3>
+    <div class="chemical-equations-box">
+        <p>Insert chemical reactions here...</p>
+    </div>
 
-        <div class="slider-label">
-            Simulation Time: <input type="range" id="simulation-time" class="slider" min="1" max="500" step="1" value="10">
-            <span id="simulation-time-value"></span>
-        </div>
-        
+    <h3>Explanation of Parameters</h3>
+    <div class="parameters-explanation-box">
+        <p>Detail the parameters such as F, D_U, D_V, and k here...</p>
     </div>
+    <h3>Parameters to be varied</h3>
+    <div class="slider-container">
+        <label>F (feed rate): <span id="f-value">0.055</span></label>
+        <input type="range" id="f" class="slider" min="0" max="0.1" step="0.001" value="0.055">
+
+        <label>D<sub>U</sub> (diffusion rate of U): <span id="du-value">0.16</span></label>
+        <input type="range" id="du" class="slider" min="0" max="1" step="0.01" value="0.16">
+
+        <label>D<sub>V</sub> (diffusion rate of V): <span id="dv-value">0.08</span></label>
+        <input type="range" id="dv" class="slider" min="0" max="1" step="0.01" value="0.08">
+
+        <label>k (kill rate): <span id="k-value">0.062</span></label>
+        <input type="range" id="k" class="slider" min="0" max="0.07" step="0.001" value="0.062">
+
+        <label>Initial U: <span id="u0-value">0.5</span></label>
+        <input type="range" id="u0" class="slider" min="0" max="1" step="0.01" value="0.5">
+
+        <label>Simulation Time: <span id="simulation-time-value">10</span></label>
+        <input type="range" id="simulation-time" class="slider" min="1" max="500" step="1" value="10">
+    </div>
+
     <h3>Chemical Concentration Time Series</h3>
     <div id="box" class="jxgbox"></div>
-    <h3>Phase space plot</h3>
-    <div id="phase-space" class="jxgbox"></div>
+
+
 
     <script src="script.js"></script>
 </body>

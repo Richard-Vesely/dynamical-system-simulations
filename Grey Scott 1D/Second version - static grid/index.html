@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gray-Scott Model Simulation</title>
+    <link rel="stylesheet" type="text/css" href="https://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        .jxgbox {
+            width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .slider-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns */
+            gap: 10px;
+            width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .slider {
+            width: 150px;
+        }
+        .equations-box, .chemical-equations-box, .parameters-explanation-box {
+            width: 600px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .equations-box p, .chemical-equations-box p, .parameters-explanation-box p {
+            margin: 5px;
+        }
+        h3 {
+            text-align: center;
+        }
+        .math {
+            font-style: italic;
+        }
+        .subscript {
+            vertical-align: sub;
+            font-size: smaller;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 800px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .grid-cell {
+            width: 150px;
+            height: 150px;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .irrelevant-cell {
+            background-color: lightgray;
+        }  
+        #p5-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .grid-slider-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .vertical-sliders {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .horizontal-sliders {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .slider-label {
+            margin: 5px;
+        }
+        </style>
+        
+</head>
+<body>
+    <div class="equations-box">
+        <!-- Differential Equations and other content -->
+    </div>
+    <h3>Parameters to be varied</h3>
+    <div class="slider-container">
+        <label>F (feed rate): <span id="f-value">0.055</span></label>
+        <input type="range" id="f" class="slider" min="0" max="0.1" step="0.001" value="0.055">
+
+        <label>D<sub>U</sub> (diffusion rate of U): <span id="du-value">0.16</span></label>
+        <input type="range" id="du" class="slider" min="0" max="1" step="0.01" value="0.16">
+
+        <label>D<sub>V</sub> (diffusion rate of V): <span id="dv-value">0.08</span></label>
+        <input type="range" id="dv" class="slider" min="0" max="1" step="0.01" value="0.08">
+
+        <label>k (kill rate): <span id="k-value">0.062</span></label>
+        <input type="range" id="k" class="slider" min="0" max="0.07" step="0.001" value="0.062">
+
+        <label>Initial U: <span id="u0-value">0.5</span></label>
+        <input type="range" id="u0" class="slider" min="0" max="1" step="0.01" value="0.5">
+
+        <label>Simulation Time: <span id="simulation-time-value">10</span></label>
+        <input type="range" id="simulation-time" class="slider" min="1" max="500" step="1" value="10">
+    </div>
+
+    <h3>Chemical Concentration Time Series</h3>
+    <div id="box" class="jxgbox"></div>
+
+    <h3>Surrounding Cells</h3>
+    <div class="grid-slider-container horizontal-sliders">
+        <label>Top U: <input type="range" id="top-u" min="0" max="1" step="0.01" value="0.5"></label>
+        <label>Top V: <input type="range" id="top-v" min="0" max="1" step="0.01" value="0.5"></label>
+    </div>
+    <div class="grid-slider-container">
+        <div class="vertical-sliders">
+            <label>Left U: <input type="range" id="left-u" min="0" max="1" step="0.01" value="0.5"></label>
+            <label>Left V: <input type="range" id="left-v" min="0" max="1" step="0.01" value="0.5"></label>
+        </div>
+        <div id="p5-container"></div>
+        <div class="vertical-sliders">
+            <label>Right U: <input type="range" id="right-u" min="0" max="1" step="0.01" value="0.5"></label>
+            <label>Right V: <input type="range" id="right-v" min="0" max="1" step="0.01" value="0.5"></label>
+        </div>
+    </div>
+    <div class="grid-slider-container horizontal-sliders">
+        <label>Bottom U: <input type="range" id="bottom-u" min="0" max="1" step="0.01" value="0.5"></label>
+        <label>Bottom V: <input type="range" id="bottom-v" min="0" max="1" step="0.01" value="0.5"></label>
+    </div>
+
+    <script>
+    let sliders = [];
+
+function setup() {
+    let canvas = createCanvas(300, 300); // Adjust size as needed
+    canvas.parent('p5-container');
+}
+
+function draw() {
+    background(220);
+    drawGrid();
+    updateGridColors();
+}
+
+function drawGrid() {
+    let gridSize = 3;
+    let cellSize = width / gridSize;
+
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            let cellX = x * cellSize;
+            let cellY = y * cellSize;
+
+            // Default cell color
+            fill(255);
+
+            // Make corner cells black
+            if ((x === 0 || x === gridSize - 1) && (y === 0 || y === gridSize - 1)) {
+                fill(0);
+            }
+
+            // Make center cell blue
+            if (x === 1 && y === 1) {
+                fill(0, 0, 255);
+            }
+
+            stroke(0);
+            rect(cellX, cellY, cellSize, cellSize);
+        }
+    }
+}
+
+
+function updateGridColors() {
+    let cellSize = width / 3;
+
+    // Top Cell
+    let topU = map(document.getElementById('top-u').value, 0, 1, 0, 255);
+    let topV = map(document.getElementById('top-v').value, 0, 1, 0, 255);
+    fill(topU, topV, 0);
+    rect(cellSize, 0, cellSize, cellSize);
+
+    // Left Cell
+    let leftU = map(document.getElementById('left-u').value, 0, 1, 0, 255);
+    let leftV = map(document.getElementById('left-v').value, 0, 1, 0, 255);
+    fill(leftU, leftV, 0);
+    rect(0, cellSize, cellSize, cellSize);
+
+    // Right Cell
+    let rightU = map(document.getElementById('right-u').value, 0, 1, 0, 255);
+    let rightV = map(document.getElementById('right-v').value, 0, 1, 0, 255);
+    fill(rightU, rightV, 0);
+    rect(2 * cellSize, cellSize, cellSize, cellSize);
+
+    // Bottom Cell
+    let bottomU = map(document.getElementById('bottom-u').value, 0, 1, 0, 255);
+    let bottomV = map(document.getElementById('bottom-v').value, 0, 1, 0, 255);
+    fill(bottomU, bottomV, 0);
+    rect(cellSize, 2 * cellSize, cellSize, cellSize);
+}
+    </script>
+
+<script src="script.js"></script>
+</body>
+</html>
+
