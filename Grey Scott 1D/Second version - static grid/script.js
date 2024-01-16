@@ -1,11 +1,27 @@
-function eulerSimulate(f, du, dv, k, u0, simulationTime, dt) {
+
+function eulerSimulate() {
+    let topU = parseFloat(document.getElementById('top-u').value);
+    let topV = parseFloat(document.getElementById('top-v').value);
+    let leftU = parseFloat(document.getElementById('left-u').value);
+    let leftV = parseFloat(document.getElementById('left-v').value);
+    let rightU = parseFloat(document.getElementById('right-u').value);
+    let rightV = parseFloat(document.getElementById('right-v').value);
+    let bottomU = parseFloat(document.getElementById('bottom-u').value);
+    let bottomV = parseFloat(document.getElementById('bottom-v').value);
+    const simulationTime = parseFloat(document.getElementById('simulation-time').value);
+
+    let f = parseFloat(document.getElementById('f').value);
+    let du = parseFloat(document.getElementById('du').value);
+    let dv = parseFloat(document.getElementById('dv').value);
+    let k = parseFloat(document.getElementById('k').value);
+    let u0 = parseFloat(document.getElementById('u0').value);
+    let dt = 0.01;
     let t = 0, u = u0, v = 1 - u0;
     let us = [u0], vs = [1 - u0], ts = [0];
 
     while (t < simulationTime) {
-        let laplacianU = 0; // Placeholder for laplacian calculation
-        let laplacianV = 0; // Placeholder for laplacian calculation
-
+        let laplacianU = calculateLaplacian(u,leftU,rightU,bottomU,topU); // Placeholder for laplacian calculation
+        let laplacianV = calculateLaplacian(v,leftV,rightV,bottomV,topV); // Placeholder for laplacian calculation
         let duChange = dt * (du * laplacianU + u * Math.pow(v, 2) - (k + f) * u);
         let dvChange = dt * (dv * laplacianV - u * Math.pow(v, 2) + f * (1 - v));
         u += duChange;
@@ -18,7 +34,9 @@ function eulerSimulate(f, du, dv, k, u0, simulationTime, dt) {
 
     return { ts, us, vs };
 }
-
+function calculateLaplacian(center, left, right, bottom, top) {
+    return (-4 * center + left + right + bottom + top);
+}
 function setup() {
     let canvas = createCanvas(300, 300);
     canvas.parent('p5-container');
@@ -71,6 +89,16 @@ function updateCellColor(uSliderId, vSliderId, x, y) {
     rect(x, y, cellSize, cellSize);
 }
 
+function initializeGridSliderListeners() {
+    const gridSliders = ['top-u', 'top-v', 'left-u', 'left-v', 'right-u', 'right-v', 'bottom-u', 'bottom-v'];
+    
+    gridSliders.forEach(sliderId => {
+        document.getElementById(sliderId).addEventListener('input', () => {
+            throttledUpdateGraph();
+        });
+    });
+}
+
 window.onload = function() {
     var board = JXG.JSXGraph.initBoard('box', {
         boundingbox: [-1, 2, 10, -1], 
@@ -85,19 +113,13 @@ window.onload = function() {
     var vSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#f00'});
 
     function updateGraph() {
-        const f = parseFloat(document.getElementById('f').value);
-        const du = parseFloat(document.getElementById('du').value);
-        const dv = parseFloat(document.getElementById('dv').value);
-        const k = parseFloat(document.getElementById('k').value);
-        const u0 = parseFloat(document.getElementById('u0').value);
-        const simulationTime = parseFloat(document.getElementById('simulation-time').value);
-        const dt = 0.01;
 
+        const simulationTime = parseFloat(document.getElementById('simulation-time').value);
         const minX = -simulationTime * 0.06;
         const maxX = simulationTime;
         board.setBoundingBox([minX, 2, maxX, -1], false);
 
-        let { ts, us, vs } = eulerSimulate(f, du, dv, k, u0, simulationTime, dt);
+        let { ts, us, vs } = eulerSimulate();
      
         uSeries.dataX = ts;
         uSeries.dataY = us;
