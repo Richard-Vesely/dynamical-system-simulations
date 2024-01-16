@@ -1,5 +1,8 @@
+let board, uSeries, vSeries;
+let timeoutId;
 let centerU, centerV; // Global variables for center cell U and V values
 
+const allSliders = ['f', 'du', 'dv', 'k', 'u0', 'simulation-time', 'top-u', 'top-v', 'left-u', 'left-v', 'right-u', 'right-v', 'bottom-u', 'bottom-v'];
 function eulerSimulate() {
     let topU = parseFloat(document.getElementById('top-u').value);
     let topV = parseFloat(document.getElementById('top-v').value);
@@ -101,18 +104,29 @@ function updateCellColor(uSliderId, vSliderId, x, y) {
     rect(x, y, cellSize, cellSize);
 }
 
-function initializeGridSliderListeners() {
-    const gridSliders = ['top-u', 'top-v', 'left-u', 'left-v', 'right-u', 'right-v', 'bottom-u', 'bottom-v'];
-    
-    gridSliders.forEach(sliderId => {
-        document.getElementById(sliderId).addEventListener('input', () => {
-            throttledUpdateGraph();
-        });
+function updateSliderValues() {
+    allSliders.forEach(sliderId => {
+        const slider = document.getElementById(sliderId);
+        const displayId = sliderId + '-value';
+        const display = document.getElementById(displayId);
+
+        // Update the display value for each slider
+        if (display) {
+            display.innerText = slider.value;
+        }
     });
 }
 
+
+
+function throttledUpdateGraph() {
+    clearTimeout(timeoutId);
+    updateSliderValues();
+    timeoutId = setTimeout(updateGraph, 100);
+}
+
 window.onload = function() {
-    var board = JXG.JSXGraph.initBoard('box', {
+    var board = JXG.JSXGraph.initBoard('myBox', {
         boundingbox: [-1, 2, 10, -1], 
         axis: true,
         keepaspectratio: false
@@ -123,6 +137,7 @@ window.onload = function() {
 
     var uSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#00f'});
     var vSeries = board.create('curve', [[], []], {strokeWidth: 2, strokeColor: '#f00'});
+
 
     function updateGraph() {
 
@@ -142,14 +157,6 @@ window.onload = function() {
         board.update();
     }
 
-    function updateSliderValues() {
-        document.getElementById('f-value').innerText = document.getElementById('f').value;
-        document.getElementById('du-value').innerText = document.getElementById('du').value;
-        document.getElementById('dv-value').innerText = document.getElementById('dv').value;
-        document.getElementById('k-value').innerText = document.getElementById('k').value;
-        document.getElementById('u0-value').innerText = document.getElementById('u0').value;
-        document.getElementById('simulation-time-value').innerText = document.getElementById('simulation-time').value;
-    }
 
     let timeoutId;
     function throttledUpdateGraph() {
@@ -159,15 +166,22 @@ window.onload = function() {
     }
 
     updateGraph();
-    updateSliderValues();
 
     // Event listeners for model parameters
-    document.getElementById('f').addEventListener('input', throttledUpdateGraph);
-    document.getElementById('du').addEventListener('input', throttledUpdateGraph);
-    document.getElementById('dv').addEventListener('input', throttledUpdateGraph);
-    document.getElementById('k').addEventListener('input', throttledUpdateGraph);
-    document.getElementById('u0').addEventListener('input', throttledUpdateGraph);
-    document.getElementById('simulation-time').addEventListener('input', throttledUpdateGraph);
+    function initializeAllSliderListeners() {  
+        allSliders.forEach(sliderId => {
+            document.getElementById(sliderId).addEventListener('input', () => {
+                throttledUpdateGraph();
+    
+                // Call updateGridColors only if it's a grid slider
+                if (gridSliders.includes(sliderId)) {
+                    updateGridColors();
+                }
+            });
+        });
+    }
+    initializeAllSliderListeners()
+
 
     // Update display for grid sliders
     const gridSliders = ['top-u', 'top-v', 'left-u', 'left-v', 'right-u', 'right-v', 'bottom-u', 'bottom-v'];
@@ -184,3 +198,5 @@ window.onload = function() {
         };
     }
 };
+
+
