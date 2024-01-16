@@ -1,3 +1,4 @@
+let centerU, centerV; // Global variables for center cell U and V values
 
 function eulerSimulate() {
     let topU = parseFloat(document.getElementById('top-u').value);
@@ -31,6 +32,8 @@ function eulerSimulate() {
         vs.push(v);
         ts.push(t);
     }
+    centerU = u;
+    centerV = v;
 
     return { ts, us, vs };
 }
@@ -77,8 +80,17 @@ function updateGridColors() {
     let cellSize = width / 3;
     updateCellColor('top-u', 'top-v', cellSize, 0);
     updateCellColor('left-u', 'left-v', 0, cellSize);
+    updateCenterCellColor(cellSize, cellSize);
     updateCellColor('right-u', 'right-v', 2 * cellSize, cellSize);
     updateCellColor('bottom-u', 'bottom-v', cellSize, 2 * cellSize);
+}
+
+function updateCenterCellColor(x, y) {
+    let cellSize = width / 3;
+    let uValue = map(centerU, 0, 1, 0, 255);
+    let vValue = map(centerV, 0, 1, 0, 255);
+    fill(uValue, vValue, 0);
+    rect(x, y, cellSize, cellSize);
 }
 
 function updateCellColor(uSliderId, vSliderId, x, y) {
