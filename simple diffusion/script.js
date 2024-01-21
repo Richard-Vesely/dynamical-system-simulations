@@ -8,11 +8,27 @@ const canvasHeight = canvas.height; // Actual resolution
 const scene = new THREE.Scene();
 const camera = new THREE.Camera();
 const renderer = new THREE.WebGLRenderer({ canvas: canvas });
+const gl = renderer.getContext();
+const ext = gl.getExtension('OES_texture_float');
+if (!ext) {
+    console.error('Floating point textures not supported');
+    // Handle the lack of support for floating point textures.
+    // For example, you might want to alert the user or use a different rendering approach.
+    // alert("Your device or browser does not support floating point textures, which are required for this application.");
+    // You can also set a flag or take other appropriate actions based on your application's requirements.
+}
 renderer.setSize(canvasWidth, canvasHeight);
 
 // Create two render targets for ping-pong rendering
-const renderTargetA = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
-const renderTargetB = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight);
+const options = {
+    type: THREE.FloatType, // Use floating point textures
+    minFilter: THREE.NearestFilter,
+    magFilter: THREE.NearestFilter
+};
+
+const renderTargetA = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight, options);
+const renderTargetB = new THREE.WebGLRenderTarget(canvasWidth, canvasHeight, options);
+
 let currentRenderTarget = renderTargetA;
 let nextRenderTarget = renderTargetB;
 
@@ -38,6 +54,7 @@ const decayMaterial = new THREE.ShaderMaterial({
         }
     `,
     fragmentShader: `
+        precision highp float;
         uniform sampler2D uTexture;
         uniform float uDecayRate;
         uniform vec2 uCanvasSize;
@@ -62,6 +79,7 @@ const clickMaterial = new THREE.ShaderMaterial({
         }
     `,
     fragmentShader: `
+        precision highp float;
         uniform vec2 uClickPosition;
         uniform vec2 uCanvasSize;
         uniform float uDotRadius;

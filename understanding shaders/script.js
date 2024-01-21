@@ -8,7 +8,7 @@ const sliderValueDisplay = document.getElementById('sliderValue');
 const decayRateSlider = document.getElementById('decayRateSlider');
 const decayRateValueDisplay = document.getElementById('decayRateValue');
 const resetSceneButton = document.getElementById('resetSceneButton');
-
+                                                                                                                                                         
 nthRectangleSlider.max = nRectangles - 1;
 sliderValueDisplay.textContent = nthRectangleSlider.value;
 
@@ -57,9 +57,9 @@ const decayMaterial = new THREE.ShaderMaterial({
         
         // Apply exponential decay only to the left half of the screen
         if (gl_FragCoord.x < ${canvasWidth.toFixed(1)} / 2.0) {
-            currentIntensity *= 1000.0;
+
             currentIntensity *= (1.0 - decayRate);
-            currentIntensity *= 0.001;
+
         }
         // Right side: horizontal rectangles with varying intensity
         else {

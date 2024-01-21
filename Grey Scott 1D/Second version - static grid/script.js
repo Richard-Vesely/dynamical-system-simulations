@@ -112,12 +112,10 @@ function updateSliderValues() {
 
         // Update the display value for each slider
         if (display) {
-            display.innerText = slider.value;
+            display.innerText  slider.value;
         }
     });
 }
-
-
 
 function throttledUpdateGraph() {
     clearTimeout(timeoutId);
